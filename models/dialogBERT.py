@@ -348,20 +348,21 @@ class DialogBERT(nn.Module):
             context, context_utts_attn_mask, context_attn_mask, context_lm_targets, context_position_perm_id, context_position_ids, response)
         return results['loss'].item()
     
-    def generate(self, input_batch, max_len=30, num_samples=1, mode='sample'):    
+    def generate(self, input_batch, max_len=30, num_samples=1, mode='sample'):
         self.eval()
         device = next(self.parameters()).device
         context, context_utts_attn_mask, context_attn_mask = [t.to(device) for t in input_batch[:3]]    
+        batch_sz = context.shape[0]
         ground_truth = input_batch[6].numpy()
             
         context_hiddens, context_encoding = self.context_encoding(
             context, context_utts_attn_mask, context_attn_mask)
 
-        generated = torch.zeros((num_samples,1), dtype=torch.long, device=device).fill_(self.tokenizer.cls_token_id)
-                                                 # [batch_sz x 1] (1=seq_len)
+        generated = torch.zeros((batch_sz, num_samples), dtype=torch.long, device=device).fill_(self.tokenizer.cls_token_id)
+                                                 # [batch_sz x num_samples]
         
-        sample_lens= torch.ones((num_samples,1), dtype=torch.long, device=device) 
-        len_inc = torch.ones((num_samples,1), dtype=torch.long, device=device) 
+        sample_lens= torch.ones((batch_sz, 1), dtype=torch.long, device=device) 
+        len_inc = torch.ones((batch_sz, 1), dtype=torch.long, device=device) 
         for _ in range(max_len):
             outputs,*_ = self.decoder(
                 generated, generated.ne(self.tokenizer.pad_token_id).long(), None, None, None, None,

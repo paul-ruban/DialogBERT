@@ -301,7 +301,7 @@ class Learner(object):
 
         model1 = model.module if hasattr(model, 'module') else model       
 
-        eval_batch_size = 1 #args.per_gpu_eval_batch_size * max(1, args.n_gpu)        
+        eval_batch_size = args.per_gpu_eval_batch_size * max(1, args.n_gpu)        
         sampler = SequentialSampler(dataset) if args.local_rank == -1 else DistributedSampler(dataset)
         dataloader = DataLoader(dataset, sampler=sampler, batch_size=eval_batch_size)       
 

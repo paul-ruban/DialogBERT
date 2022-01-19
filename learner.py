@@ -32,11 +32,16 @@ from nltk.translate.bleu_score import sentence_bleu
 from nltk.translate.bleu_score import SmoothingFunction
 from nltk.translate.meteor_score import meteor_score
 from nltk.translate.nist_score import sentence_nist
+try:
+    nltk.data.find("corpora/omw-1.4.zip")
+except LookupError:
+    nltk.download('omw-1.4')
 try: 
-    meteor_score(["hello world"], "hi world")
+    nltk.data.find("corpora/wordnet")
 except LookupError: 
     nltk.download('wordnet')
-        
+
+
 class Metrics:
     def __init__(self):
         super(Metrics, self).__init__()
@@ -80,7 +85,7 @@ class Metrics:
         scores = []
         for hyp in hyps:
             #try:
-            scores.append(meteor_score([ref], hyp))
+            scores.append(meteor_score([[ref]], [hyp]))
             #except:
             #    scores.append(0.0)
         return np.max(scores), np.mean(scores)
